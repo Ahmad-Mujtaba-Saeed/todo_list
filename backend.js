@@ -51,14 +51,23 @@ app.use(express.static("public/images"))
 
 
 //when u use ejs engine
-app.get("/home",(req , res) => { //call back function
+app.get("/home",async(req , res) => { //call back function
+    try{
     let data;
-    let dataRef = firebaseDatabase_ref(db,'todo/');
-    firebaseDatabase_onValue(dataRef, (snapshot) => {
-    data = snapshot.val();
-    console.log(data)
-    });
-    res.render("index.ejs",{data:data})//we use render in ejs engine
+        await new Promise((resolve, reject) =>{
+            let dataRef = firebaseDatabase_ref(db,'todo/');
+            firebaseDatabase_onValue(dataRef, (snapshot) => {
+            data = snapshot.val();
+            console.log(data) 
+            resolve()
+        });
+        })
+    res.render("index.ejs",{data:data})
+    //we use render in ejs engine
+    }
+    catch(err){
+        console.log(err)
+    }
 })
 
 // app.get("/home",(req , res) => { //call back function
@@ -102,11 +111,11 @@ app.post("/post/add_task/",(req,res)=>{
 
 
     else if(btn_id1 == "DeleteALL"){
-        firebaseDatabase.remove(firebaseDatabase_ref(db,'todo/todo/'))
         const ref = firebaseDatabase_ref(db,'todo/counter');
         firebaseDatabase_set(ref,{
                 counter: 0
         })
+        firebaseDatabase.remove(firebaseDatabase_ref(db,'todo/todo/'))
         res.redirect("/home")
     }
 })
@@ -117,7 +126,8 @@ app.post("/post/add_task/",(req,res)=>{
 
 
 //if data came from update or delete button
-app.post("/todo/Update",(req,res)=>{
+app.post("/todo/Update",async (req,res)=>{
+    try{
     console.log(req.body) //goood to see this first
     let task = req.body.task
     let time = req.body.time
@@ -125,7 +135,7 @@ app.post("/todo/Update",(req,res)=>{
     t_counter-- 
     let number = req.body.number
     const buttonId = req.body.btn_id;
-
+    console.log(number)
 
 
     if(buttonId == "Update"){
@@ -140,12 +150,20 @@ app.post("/todo/Update",(req,res)=>{
 
     else if(buttonId == "Delete"){
     console.log("i am here")
-    const ref = firebaseDatabase_ref(db,'todo/counter');
-    firebaseDatabase_set(ref,{
+    
+    await new Promise((resolve,reject)=>{
+        const ref = firebaseDatabase_ref(db,'todo/counter');
+            firebaseDatabase_set(ref,{
             counter: t_counter
+    })  
+        resolve()
     })
     firebaseDatabase.remove(firebaseDatabase_ref(db,'todo/todo/'+number))
-}
+    }
+    }
+    catch(err){
+        console.log(err)
+    }
     // const ref = firebaseDatabase_ref(db,'todo/counter');
     // firebaseDatabase_set(ref,{
     //             counter: counter.counter
