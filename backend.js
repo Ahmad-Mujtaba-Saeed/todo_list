@@ -154,12 +154,33 @@ app.post("/todo/Update",async (req,res)=>{
     await new Promise((resolve,reject)=>{
         const ref = firebaseDatabase_ref(db,'todo/counter');
             firebaseDatabase_set(ref,{
-            counter: t_counter
+            counter: t_counter //c = 2
     })  
         resolve()
     })
-    firebaseDatabase.remove(firebaseDatabase_ref(db,'todo/todo/'+number))
+    console.log(t_counter,number)
+    while(t_counter > number){
+        
+        number++
+        let dataRef = firebaseDatabase_ref(db,'todo/todo/'+number);
+        firebaseDatabase_onValue(dataRef, (snapshot) => {
+            console.log("after",number)
+            data1 = snapshot.val();
+        })
+        
+        
+        console.log("this is data",data1)
+        number--
+        
+        const refer = firebaseDatabase_ref(db,'todo/todo/'+number);
+            firebaseDatabase_set(refer,{
+                todo : data1.todo,
+                time : data1.time
+                })
+        number++
     }
+    firebaseDatabase.remove(firebaseDatabase_ref(db,'todo/todo/'+t_counter))
+}
     }
     catch(err){
         console.log(err)
